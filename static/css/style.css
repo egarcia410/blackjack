@@ -11,7 +11,7 @@ html {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-gap: 10px;
-    grid-template-rows: minmax(100px, auto);
+    grid-template-rows: minmax(50px, auto);
 }
 
 label {
@@ -57,5 +57,14 @@ button:active {
   background-color: #3e8e41;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
+}
+
+#messages {
+    margin-top: 10px;
+    color: #f39c12;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
