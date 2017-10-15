@@ -1,23 +1,40 @@
 document.addEventListener("DOMContentLoaded", function(){
+
     
-    // Variables - dealerHand, playerHand, deckOfCards
-    var deckOfCards, dealerHand, playerHand;
+    // Variables - deckOfCards
+    var deckOfCards;
 
+    // blackjack buttons - deal, hit, stand
+    var deal = document.getElementById("deal-button");
+    var hit = document.getElementById("hit-button");
+    var stand = document.getElementById("stand-button");
+    
     createNewGame();
-
+    
     // Creates new blackjack game
     function createNewGame(){
         deckOfCards = [];
-        dealerHand = [];
-        playerHand = [];
+        dealer = new Player("Dealer", "dealer-hand", "dealer-points");
+        player = new Player("You", "player-hand", "player-points" );
         deck = createNewDeck();
         shuffle(deck);
+        document.getElementById("hit-button").style.display = "none";
+        document.getElementById("stand-button").style.display = "none";
+    };
+
+    // Create a player base model for dealer and player
+    function Player(name, elementHand, elementPoints){
+        this.name = name;
+        this.elementHand = elementHand;
+        this.elementPoints = elementPoints;
+        this.hand = [];
+        this.points = 0;
     };
     
     // Create New Deck of Cards
     function createNewDeck(){
         // Each card has an associated value, rank, and suit
-        function card(value, rank, suit){
+        function Card(value, rank, suit){
             this.value = value;
             this.rank = rank;
             this.suit = suit;
@@ -32,10 +49,10 @@ document.addEventListener("DOMContentLoaded", function(){
         for (suit in suits){
             for (rank in ranks){
                 if (ranks[rank] === "J" || ranks[rank] === "Q" || ranks[rank]=== "K"){
-                    deckOfCards.push(new card(10, ranks[rank], suits[suit]));            
+                    deckOfCards.push(new Card(10, ranks[rank], suits[suit]));            
                 }
                 else {
-                    deckOfCards.push(new card(parseInt(rank, 10) + 1, ranks[rank], suits[suit]));
+                    deckOfCards.push(new Card(parseInt(rank, 10) + 1, ranks[rank], suits[suit]));
                 };
             };
         };
@@ -51,88 +68,79 @@ document.addEventListener("DOMContentLoaded", function(){
         };
     };
     
-    // blackjack buttons - deal, hit, stand
-    var deal = document.getElementById("deal-button");
-    var hit = document.getElementById("hit-button");
-    var stand = document.getElementById("stand-button");
-    
     // Deals two cards to each player and dealer when deal button is clicked
-    function deal(){
+    deal.addEventListener("click", function(){
+        clearTable();
         for (var i = 0; i < 2; i++){
-            // Adds  2 cards to player hand
-            dealCard(playerHand, "player-hand")
+            // Adds  2 cards to player and dealer hand
+            dealCard(player);
+            dealCard(dealer);
         };
-        for (var i = 0; i < 2; i++){
-            // Adds 2 cards to dealer hand
-            dealCard(dealerHand, "dealer-hand")
-        };
-        // Total player and dealer points
-        playerPoints = calculatePoints(playerHand);        
-        dealerPoints = calculatePoints(dealerHand);
-        // Display total points for player and dealer
-        document.getElementById("player-points").innerHTML = playerPoints;
-        document.getElementById("dealer-points").innerHTML = dealerPoints;
+        // Total player and dealer points and displays points
+        calculatePoints(player);        
+        calculatePoints(dealer);
         // Can only deal once per game, disables deal button 
-        document.getElementById("deal-button").disabled = true;
+        document.getElementById("deal-button").style.display = 'none';
         // Enable hit and stand button
-        document.getElementById("hit-button").disabled = false;
-        document.getElementById("stand-button").disabled = false;
-    };
+        document.getElementById("hit-button").style.display = 'inline';
+        document.getElementById("stand-button").style.display = 'inline';
+    });
     
     // Deals one card to the player when hit button is clicked
     hit.addEventListener("click", function(){
-        console.log(playerHand, 'HIT BUTTON');
         // Adds card to player hand, and displays card on players table
-        dealCard(playerHand, "player-hand")
+        dealCard(player)
         // Total player card values
-        playerPoints = calculatePoints(playerHand);
-        // Check if player went bust
-        if (playerPoints > 21){
-            isBust("You", "Dealer");
-        }
+        calculatePoints(player);
+        // Check if player went bust, exceeded 21 points
+        if (player.points > 21){
+            gameOver(player, dealer);
+        };
     });
-
+    
     // Adds card to either player or dealer hand
-    function dealCard(hand, element){
+    function dealCard(player){
         let image = document.createElement("img");          
         // Retrieve card from deckOfCards  
         let card = deckOfCards.pop();
         // Add card to hand
-        hand.push(card);
+        player.hand.push(card);
         // Display card on table
         image.src = `./static/img/cards/Set_B/small/${card.rank}-of-${card.suit}.png`;
-        document.getElementById(element).appendChild(image); 
+        document.getElementById(player.elementHand).appendChild(image); 
     };
             
     // Handles point total for both player and dealer
-    function calculatePoints(cards){
+    function calculatePoints(player){
         // Create new array of cards in hand
-        cards = cards.splice(0);
+        cards = player.hand.slice(0);
         // Sort cards value from highest to lowest
         cards.sort(function(a, b){
             return b.value - a.value;
         });
         // Calcute sum of cards in hand
-        return cards.reduce(function(sum, card){
+        points = cards.reduce(function(sum, card){
             if (card.rank === "A" && sum < 11){
                 return sum + 11;
             };
             return sum + card.value;
         }, 0);
+        player.points = points;
+        document.getElementById(player.elementPoints).innerHTML = points;
     };
     
-    // If bust, display game over message, the winner, and
+    // If Game Over, display game over message, the winner, and
     // allow for new game to be played
-    function isBust(player, opponent){
-        document.getElementById("messages").innerHTML = `${player} Went Bust!
-                                                         ${opponent} Won!
-                                                         Deal Again?`;
+    function gameOver(player, dealer){
+        document.getElementById("messages").innerHTML = `${player.name} Bust!
+                                                             ${dealer.name} Won!
+                                                             Deal Again?`;
         // Enable deal button
-        document.getElementById("deal-button").disabled = false;
+        document.getElementById("deal-button").style.display = "inline";
         // Disable hit and stand button
-        document.getElementById("hit-button").disabled = true;
-        document.getElementById("stand-button").disabled = true;
+        document.getElementById("hit-button").style.display = "none";
+        document.getElementById("stand-button").style.display = "none";
+        createNewGame();
     };
-
 }); //End of DOM
 
