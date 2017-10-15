@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function(){
-
     
-    // Variables - deckOfCards
+    // Variable - deckOfCards
     var deckOfCards;
 
     // blackjack buttons - deal, hit, stand
@@ -9,6 +8,10 @@ document.addEventListener("DOMContentLoaded", function(){
     var hit = document.getElementById("hit-button");
     var stand = document.getElementById("stand-button");
     
+// ###################################
+// ######### INITIALIZE GAME #########
+// ###################################
+
     createNewGame();
     
     // Creates new blackjack game
@@ -68,8 +71,13 @@ document.addEventListener("DOMContentLoaded", function(){
         };
     };
     
+// ###################################
+// ########## BUTTON EVENTS ##########
+// ###################################
+
     // Deals two cards to each player and dealer when deal button is clicked
     deal.addEventListener("click", function(){
+        // clears table from previous game played
         clearTable();
         for (var i = 0; i < 2; i++){
             // Adds  2 cards to player and dealer hand
@@ -97,6 +105,10 @@ document.addEventListener("DOMContentLoaded", function(){
             gameOver(player, dealer);
         };
     });
+
+// ###################################
+// ###### GAME HELPER FUNCTIONS ######
+// ###################################
     
     // Adds card to either player or dealer hand
     function dealCard(player){
@@ -141,6 +153,21 @@ document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("hit-button").style.display = "none";
         document.getElementById("stand-button").style.display = "none";
         createNewGame();
+    };
+
+    // Clears table of cards from dealer and player
+    function clearTable(){
+        playerNode = document.getElementById("player-hand");
+        dealerNode = document.getElementById("dealer-hand");
+        if (playerNode.hasChildNodes()){
+            while (playerNode.firstChild){
+                playerNode.removeChild(playerNode.firstChild);
+            };
+            while (dealerNode.firstChild){
+                dealerNode.removeChild(dealerNode.firstChild);
+            };
+        };
+        document.getElementById("messages").innerHTML = "";        
     };
 }); //End of DOM
 
