@@ -173,7 +173,8 @@ document.addEventListener("DOMContentLoaded", function(){
         // Add card to hand
         player.hand.push(card);
         // Display card on table
-        image.src = `./static/img/cards/Set_B/small/${card.rank}-of-${card.suit}.png`;
+        image.className = "animated slideInLeft"
+        image.src = `./static/img/cards/${card.rank}-of-${card.suit}.png`;
         document.getElementById(player.elementHand).appendChild(image);
         // Calcualte points from cards in hand
         calculatePoints(player);
