@@ -1,3 +1,3 @@
--[] Add feature for when player gets "Blackjack"
--[] Allow betting
--[] when bank amount is zero, allow for a new game
+- [ ] Add feature for when player gets "Blackjack"
+- [ ] Allow betting
+- [ ] When bank amount is zero, allow for a new game
