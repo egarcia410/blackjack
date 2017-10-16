@@ -4,18 +4,19 @@
 }
 
 html {
-    background-color: #212A31;
+    background-color: #35485F;
+    font-family: 'Merriweather Sans', sans-serif;
 }
 
 #table {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-gap: 10px;
-    grid-template-rows: minmax(50px, auto);
+    grid-gap: 5px;
+    grid-template-rows: minmax(75px, auto);
 }
 
 label {
-    color: #1FCA67;
+    color: white;
     font-size: 30px;
 }
 
@@ -24,13 +25,14 @@ label {
 }
 
 .hand {
-    background-color: #168893;
+    border: 5px solid #20A289;
+    border-radius: 15px;
+    background-color: #2ABB9B;
     min-height: 226px;
  }
 
 .buttons {
     text-align: center;
-    margin-top: 20px;
 }
 
 img {
@@ -38,7 +40,7 @@ img {
 }
 
 button {
-    margin: 10px;
+    margin: 5px;
     padding: 15px 25px;
     font-size: 24px;
     text-align: center;
@@ -60,9 +62,10 @@ button:active {
 }
 
 #messages {
+    font-size: 50px;
+    font-weight: 600;
     margin-top: 10px;
-    color: #f39c12;
-    font-size: 30px;
+    color: #D85345;
     display: flex;
     justify-content: center;
     align-items: center;
