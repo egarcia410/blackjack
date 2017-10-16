@@ -77,8 +77,9 @@ button {
 }
 
 .playerInfo {
-    display: grid;
-    grid-template-columns: repeat(4, auto);  
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; 
 }
 
 .chipButton {

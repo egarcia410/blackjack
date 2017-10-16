@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", function(){
     
     // Starts a new game without creating a new player
     function playAgain(){
+        document.getElementById("hit-button").style.display = "none";
+        document.getElementById("stand-button").style.display = "none";
         dealer = new Player("Dealer", "dealer-hand", "dealer-points");
         // Reset bet amount, player hand, and points
         player.bet = 0;
@@ -37,9 +39,9 @@ document.addEventListener("DOMContentLoaded", function(){
         player.points = 0;
         setTimeout(function(){
             // clears table from previous game played
+            displayGameInfo();
             clearTable();
         }, 3000);
-        displayGameInfo();
     };
     
     // Displays game information about dealer and player
@@ -114,8 +116,8 @@ document.addEventListener("DOMContentLoaded", function(){
     // Resets player and dealer stats, starts whole new game
     // Add this feature when player reaches 0 bank amount
     newGame.addEventListener("click", function(){
-        createNewGame();
         clearTable();        
+        createNewGame();
     });
 
     // Set bet of player
@@ -247,14 +249,14 @@ document.addEventListener("DOMContentLoaded", function(){
     function gameStatus(activePlayer, opponent){
         let gameOver = false;
         let message = "";
-        let gameWon = false;
+        let gameWon = "";
 
         if (activePlayer.points > 21){
-            message = `${activePlayer.name} Bust! ${opponent.name} Won! Deal Again?`;
+            message = `${activePlayer.name} Bust! ${opponent.name} Won!`;
             gameOver = true;
             if (activePlayer.name === "Dealer"){
                 player.wins += 1;
-                gameWon = true;
+                gameWon = "won";
             }                                                               
         };
 
@@ -262,24 +264,29 @@ document.addEventListener("DOMContentLoaded", function(){
             // If activePlayer is You
             if (activePlayer.name === "You"){
                 if (opponent.points >= 17 && activePlayer.points > opponent.points){
-                    message = `${activePlayer.name} Won! Deal Again?`;                
+                    message = `${activePlayer.name} Won!`;                
                     gameOver = true;
                     player.wins += 1;
-                    gameWon = true;
+                    gameWon = "won";
                 };
             }
             // If activePlayer is the Dealer
             else if (activePlayer.name === "Dealer"){
-                if (activePlayer.points === opponent.points){
-                    message = `Draw! Deal Again?`;
+                if (opponent.points === 21 && opponent.hand.length === 2 && activePlayer.points !== 21){
+                    message = `${opponent.name} Won! BLACKJACK!`
+                    gameWon = "blackjack";
+                }
+                else if (activePlayer.points === opponent.points){
+                    message = `Push!`;
+                    gameWon = "draw";
                 }
                 else if (activePlayer.points > opponent.points){
-                    message = `${activePlayer.name} Won! Deal Again?`; 
+                    message = `${activePlayer.name} Won!`; 
                 }
                 else if (activePlayer.points < opponent.points){
-                    message = `${opponent.name} Won! Deal Again?`;
+                    message = `${opponent.name} Won!`;
                     player.wins += 1;
-                    gameWon = true;
+                    gameWon = "won";
                 };
                 gameOver = true;
             };
@@ -289,11 +296,30 @@ document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("messages").innerHTML = message;
         if (gameOver){
             // Set player winnings
-            if (gameWon){
+            if (gameWon === "won"){
                 betWinnings = player.bet * 2;
                 player.bank += betWinnings; 
             }
-            playAgain();
+            else if (gameWon === "blackjack"){
+                betWinnings = (player.bet * 1.5) + player.bet;
+                player.bank += betWinnings; 
+            }
+            else if (gameWon === "draw"){
+                betWinnings = player.bet;
+                player.bank += betWinnings;
+            }
+            // If player is broke after losing last hand
+            if (player.bank === 0){
+                // Hide buttons
+                document.getElementById("new-button").style.display = "flex";   
+                document.getElementById("bettingButtons").style.display = "none";                
+                document.getElementById("deal-button").style.display = "none";        
+                document.getElementById("hit-button").style.display = "none";
+                document.getElementById("stand-button").style.display = "none";
+            }
+            else {
+                playAgain();
+            }
         };
     };
 
