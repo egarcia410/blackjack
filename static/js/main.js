@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function(){
     // blackjack buttons - bet, rebet, chip, deal, hit, stand
     var bet = document.getElementById("bet-button");
     var rebet = document.getElementById("rebet-button");    
-    var chip = document.getElementsByClassName("chip");    
+    var chip = document.getElementsByClassName("chipButton");    
     var deal = document.getElementById("deal-button");
     var newGame = document.getElementById("new-button");
     var hit = document.getElementById("hit-button");
@@ -32,7 +32,9 @@ document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("wins").innerHTML = player.wins;
         // Create Betting Feature
         // document.getElementById("deal-button").style.display = "none";        
-        document.getElementById("deal-button").style.display = "inline";        
+        document.getElementById("deal-button").style.display = "none";        
+        document.getElementById("deal-button").style.display = "none";        
+        document.getElementById("deal-button").style.display = "none";        
         document.getElementById("new-button").style.display = "none";        
         document.getElementById("hit-button").style.display = "none";
         document.getElementById("stand-button").style.display = "none";
@@ -150,6 +152,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
     // Start dealer's turn after stand button is clicked by player
     stand.addEventListener("click", function(){
+        // Flip over deal's second card, hole card
+        holeCard = document.getElementById("holeCard");
+        holeCard.className = "animated flipInY";
+        card = dealer.hand[1];
+        holeCard.src = `./static/img/cards/${card.rank}-of-${card.suit}.png`; 
+        // Recalculate dealer's points
+        calculatePoints(dealer);
         while (dealer.points < 17){
             dealCard(dealer);
         };
@@ -172,12 +181,19 @@ document.addEventListener("DOMContentLoaded", function(){
         };
         // Add card to hand
         player.hand.push(card);
-        // Display card on table
         image.className = "animated slideInLeft"
-        image.src = `./static/img/cards/${card.rank}-of-${card.suit}.png`;
+        // Hide Dealer's second card during initial deal
+        if (player.name === 'Dealer' && player.hand.length === 2){
+            image.id = "holeCard";
+            image.src = `./static/img/decks/deck_4.png`;                
+        }
+        else {
+            image.src = `./static/img/cards/${card.rank}-of-${card.suit}.png`;
+            // Calcualte points from cards in hand
+            calculatePoints(player);
+        };
+        // Display card on table
         document.getElementById(player.elementHand).appendChild(image);
-        // Calcualte points from cards in hand
-        calculatePoints(player);
     };
             
     // Handles point total for both player and dealer

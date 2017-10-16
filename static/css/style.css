@@ -33,14 +33,9 @@ label {
 
  img {
      margin: 10px;
-     -webkit-animation-duration: 3s;
-     /* -webkit-animation-delay: 2s; */
-     /* position: absolute; */
-     left: -100px;
-     /* -webkit-animation-iteration-count: infinite; */
  }
 
-.buttons {
+#bettingButtons {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -97,4 +92,5 @@ button {
 .chip {
     width: 58px;
     height: 58px;
+    margin: 0;
 }
