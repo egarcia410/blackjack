@@ -35,7 +35,7 @@ label {
      margin: 10px;
  }
 
-#bettingButtons {
+#bettingButtons, .buttons {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;

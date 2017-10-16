@@ -25,30 +25,38 @@ document.addEventListener("DOMContentLoaded", function(){
         player = new Player("You", "player-hand", "player-points" );
         deck = createNewDeck();
         shuffle(deck);
+        displayGameInfo();     
+    };
+    
+    // Starts a new game without creating a new player
+    function playAgain(){
+        dealer = new Player("Dealer", "dealer-hand", "dealer-points");
+        // Reset bet amount, player hand, and points
+        player.bet = 0;
+        player.hand = [];
+        player.points = 0;
+        setTimeout(function(){
+            // clears table from previous game played
+            clearTable();
+        }, 3000);
+        displayGameInfo();
+    };
+    
+    // Displays game information about dealer and player
+    function displayGameInfo(){
+        // Display game info
         document.getElementById("dealer-points").innerHTML = dealer.points;                
         document.getElementById("player-points").innerHTML = player.points;        
         document.getElementById("bet-amount").innerHTML = player.bet;
         document.getElementById("bank-amount").innerHTML = player.bank;
         document.getElementById("wins").innerHTML = player.wins;
-        // Create Betting Feature
-        // document.getElementById("deal-button").style.display = "none";        
+        // Hide buttons
+        document.getElementById("bettingButtons").style.display = "flex";                
         document.getElementById("deal-button").style.display = "none";        
-        document.getElementById("deal-button").style.display = "none";        
-        document.getElementById("deal-button").style.display = "none";        
-        document.getElementById("new-button").style.display = "none";        
         document.getElementById("hit-button").style.display = "none";
         document.getElementById("stand-button").style.display = "none";
-    };
-
-    // Starts a new game without creating a new player
-    function playAgain(){
-        dealer = new Player("Dealer", "dealer-hand", "dealer-points");
-        player.hand = [];
-        document.getElementById("deal-button").style.display = "inline";        
-        // document.getElementById("new-button").style.display = "inline";        
-        document.getElementById("hit-button").style.display = "none";
-        document.getElementById("stand-button").style.display = "none";
-    };
+        document.getElementById("new-button").style.display = "none";   
+    }
 
     // Create a player base model for dealer and player
     function Player(name, elementHand, elementPoints){
@@ -109,25 +117,45 @@ document.addEventListener("DOMContentLoaded", function(){
         createNewGame();
         clearTable();        
     });
+
+    // Set bet of player
+    bet.addEventListener("click", function(){
+        betAmount = parseInt(document.getElementById("bet-amount").innerHTML);
+        bankAmount = parseInt(document.getElementById("bank-amount").innerHTML);
+        player.bet = betAmount;
+        player.bank = bankAmount;
+        document.getElementById("bettingButtons").style.display = "none";
+        document.getElementById("deal-button").style.display = "inline";        
+        document.getElementById("hit-button").style.display = "none";
+        document.getElementById("stand-button").style.display = "none";      
+    });
+
+    // Allows player to rebet, returns money to bank and set bet to zero
+    rebet.addEventListener("click", function(){
+        betAmount = parseInt(document.getElementById("bet-amount").innerHTML)
+        document.getElementById("bet-amount").innerHTML = 0;
+        player.bet = 0;
+        bankAmount = parseInt(document.getElementById("bank-amount").innerHTML)
+        document.getElementById("bank-amount").innerHTML = bankAmount + betAmount;
+        player.bank = bankAmount + betAmount
+    });
     
     // Receive value of chip when clicked on, update bank amount and betting amount
     // https://stackoverflow.com/questions/19655189/javascript-click-event-listener-on-class
     Array.from(chip).forEach(function(element){
         element.addEventListener("click", function(){
             chipValue = parseInt(element.value);
-            currentBet = parseInt(document.getElementById("bet-amount").innerHTML);
+            betAmount = parseInt(document.getElementById("bet-amount").innerHTML);
             if (player.bank - chipValue >= 0){
                 player.bank -= chipValue;
                 document.getElementById("bank-amount").innerHTML = player.bank;
-                document.getElementById("bet-amount").innerHTML = currentBet + chipValue;
+                document.getElementById("bet-amount").innerHTML = betAmount + chipValue;
             }
         });
     })
 
     // Deals two cards to each player and dealer when deal button is clicked
     deal.addEventListener("click", function(){
-        // clears table from previous game played
-        clearTable();
         for (var i = 0; i < 2; i++){
             // Adds  2 cards to player and dealer hand
             dealCard(player);
@@ -135,7 +163,6 @@ document.addEventListener("DOMContentLoaded", function(){
         };
         // Can only deal once per game, disables deal button 
         document.getElementById("deal-button").style.display = 'none';
-        // document.getElementById("new-button").style.display = 'none';
         // Enable hit and stand button
         document.getElementById("hit-button").style.display = 'inline';
         document.getElementById("stand-button").style.display = 'inline';
@@ -220,12 +247,14 @@ document.addEventListener("DOMContentLoaded", function(){
     function gameStatus(activePlayer, opponent){
         let gameOver = false;
         let message = "";
+        let gameWon = false;
 
         if (activePlayer.points > 21){
             message = `${activePlayer.name} Bust! ${opponent.name} Won! Deal Again?`;
             gameOver = true;
             if (activePlayer.name === "Dealer"){
-                player.wins += 1; 
+                player.wins += 1;
+                gameWon = true;
             }                                                               
         };
 
@@ -236,19 +265,21 @@ document.addEventListener("DOMContentLoaded", function(){
                     message = `${activePlayer.name} Won! Deal Again?`;                
                     gameOver = true;
                     player.wins += 1;
+                    gameWon = true;
                 };
             }
             // If activePlayer is the Dealer
             else if (activePlayer.name === "Dealer"){
                 if (activePlayer.points === opponent.points){
-                    message = `Draw! Deal Again?`;                   
+                    message = `Draw! Deal Again?`;
                 }
                 else if (activePlayer.points > opponent.points){
-                    message = `${activePlayer.name} Won! Deal Again?`;                
+                    message = `${activePlayer.name} Won! Deal Again?`; 
                 }
                 else if (activePlayer.points < opponent.points){
                     message = `${opponent.name} Won! Deal Again?`;
                     player.wins += 1;
+                    gameWon = true;
                 };
                 gameOver = true;
             };
@@ -257,6 +288,11 @@ document.addEventListener("DOMContentLoaded", function(){
         // Display message on table
         document.getElementById("messages").innerHTML = message;
         if (gameOver){
+            // Set player winnings
+            if (gameWon){
+                betWinnings = player.bet * 2;
+                player.bank += betWinnings; 
+            }
             playAgain();
         };
     };
@@ -275,5 +311,6 @@ document.addEventListener("DOMContentLoaded", function(){
         };
         document.getElementById("messages").innerHTML = "";        
     };
+
 }); //End of DOM
 
