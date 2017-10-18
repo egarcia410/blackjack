@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", function(){
     var deckOfCards, dealer, player;
 
     // blackjack buttons - bet, rebet, chip, deal, hit, stand
+    var chip = document.getElementsByClassName("chipButton");    
     var bet = document.getElementById("bet-button");
     var rebet = document.getElementById("rebet-button");    
-    var chip = document.getElementsByClassName("chipButton");    
     var deal = document.getElementById("deal-button");
-    var newGame = document.getElementById("new-button");
     var hit = document.getElementById("hit-button");
     var stand = document.getElementById("stand-button");
+    var newGame = document.getElementById("new-button");
     
 // ###################################
 // ######### INITIALIZE GAME #########
@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", function(){
     // Creates whole new blackjack game with new player
     function createNewGame(){
         deckOfCards = [];
-        dealer = new Player("Dealer", "dealer-hand", "dealer-points");
-        player = new Player("You", "player-hand", "player-points" );
+        dealer = new Player("Dealer", "Dealer-hand", "Dealer-points");
+        player = new Player("You", "Player-hand", "Player-points" );
         deck = createNewDeck();
         shuffle(deck);
         displayGameInfo();     
