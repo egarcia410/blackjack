@@ -1,120 +1,132 @@
 document.addEventListener("DOMContentLoaded", function(){
-    
-    // Variable - deckOfCards, dealer, and player
-    var deckOfCards, dealer, player;
 
-    // blackjack buttons - bet, rebet, chip, deal, hit, stand
-    var chip = document.getElementsByClassName("chipButton");    
-    var bet = document.getElementById("bet-button");
-    var rebet = document.getElementById("rebet-button");    
-    var deal = document.getElementById("deal-button");
-    var hit = document.getElementById("hit-button");
-    var stand = document.getElementById("stand-button");
-    var newGame = document.getElementById("new-button");
-    
-// ###################################
-// ######### INITIALIZE GAME #########
-// ###################################
+var deck;
 
-    createNewGame();
-    
-    // Creates whole new blackjack game with new player
-    function createNewGame(){
-        deckOfCards = [];
-        dealer = new Player("Dealer", "Dealer-hand", "Dealer-points");
-        player = new Player("You", "Player-hand", "Player-points" );
-        deck = createNewDeck();
-        shuffle(deck);
-        displayGameInfo();     
-    };
-    
-    // Starts a new game without creating a new player
-    function playAgain(){
-        document.getElementById("hit-button").style.display = "none";
-        document.getElementById("stand-button").style.display = "none";
-        dealer = new Player("Dealer", "dealer-hand", "dealer-points");
-        // Reset bet amount, player hand, and points
-        player.bet = 0;
-        player.hand = [];
-        player.points = 0;
-        setTimeout(function(){
-            // clears table from previous game played
-            displayGameInfo();
-            clearTable();
-        }, 3000);
-    };
-    
-    // Displays game information about dealer and player
-    function displayGameInfo(){
-        // Display game info
-        document.getElementById("dealer-points").innerHTML = dealer.points;                
-        document.getElementById("player-points").innerHTML = player.points;        
-        document.getElementById("bet-amount").innerHTML = player.bet;
-        document.getElementById("bank-amount").innerHTML = player.bank;
-        document.getElementById("wins").innerHTML = player.wins;
-        // Hide buttons
-        document.getElementById("bettingButtons").style.display = "flex";                
-        document.getElementById("deal-button").style.display = "none";        
-        document.getElementById("hit-button").style.display = "none";
-        document.getElementById("stand-button").style.display = "none";
-        document.getElementById("new-button").style.display = "none";   
-    }
+// blackjack buttons - bet, rebet, chip, deal, hit, stand
+var chip = document.getElementsByClassName("chipButton");    
+var bet = document.getElementById("bet-button");
+var rebet = document.getElementById("rebet-button");    
+var deal = document.getElementById("deal-button");
+var hit = document.getElementById("hit-button");
+var stand = document.getElementById("stand-button");
+var newGame = document.getElementById("new-button");
 
-    // Create a player base model for dealer and player
-    function Player(name, elementHand, elementPoints){
-        this.name = name;
-        this.elementHand = elementHand;
-        this.elementPoints = elementPoints;
-        this.hand = [];
-        this.points = 0;
-        this.bank = 100;
-        this.bet = 0;
-        this.wins = 0
+// ###########################
+// ######### CLASSES #########
+// ###########################
+
+    // Create Person Class
+    class Person {
+        constructor (name){
+            this.name = name;
+            this.hand = [];
+            this.points = 0;
+            this.bet = 0;
+            this.bank = 100;
+            this.wins = 0;
+        }
+
+        // Calculates values of cards in hand
+        calculateHand(){
+            // Creates copy of hand array
+            cards = this.hand.slice();
+            // Sorts cards highest to lowerst value
+            cards.sort(function(a, b){
+                return b.value - a.value;
+            });
+            // Calcute sum of cards in hand
+            points = cards.reduce(function(sum, card){
+            if (card.rank === "A" && sum < 11){
+                return sum + 11;
+            };
+            return sum + card.value;
+            }, 0);
+            this.points = points;
+            document.getElementById(`${this.name}-points`).innerHTML = points;
+        }
     };
-    
-    // Create New Deck of Cards
-    function createNewDeck(){
-        // Each card has an associated value, rank, and suit
-        function Card(value, rank, suit){
+
+    // Create Card Class
+    class Card {
+        constructor (value, rank, suit){
             this.value = value;
             this.rank = rank;
             this.suit = suit;
-        };
+        }
+
+        getCardImageURL(){
+            return `./static/img/cards/${this.rank}-of-${this.suit}.png`
+        }
+    };
+
+    // Create Deck Class
+    class Deck {
+        constructor (){
+            this.deckOfCards = [];
+        }
         
-        // Suit and Rank types
-        var suits = ['diamonds', 'clubs', 'hearts', 'spades'];
-        var ranks = ['A', '2', '3', '4', '5', '6', 
-                    '7', '8', '9', '10', 'J', 'Q', 'K']
-    
-        // Create deck of cards, 52 cards in a deck
-        for (suit in suits){
-            for (rank in ranks){
-                if (ranks[rank] === "J" || ranks[rank] === "Q" || ranks[rank]=== "K"){
-                    deckOfCards.push(new Card(10, ranks[rank], suits[suit]));            
-                }
-                else {
-                    deckOfCards.push(new Card(parseInt(rank, 10) + 1, ranks[rank], suits[suit]));
+        // Creates new deck of cards
+        createNewDeck(){
+            var suits = ['diamonds', 'clubs', 'hearts', 'spades'];
+            var ranks = ['A', '2', '3', '4', '5', '6', 
+                        '7', '8', '9', '10', 'J', 'Q', 'K']
+
+            // Create deck of cards, 52 cards in a deck
+            for (var i = 0; i < suits.length; i++){
+                for(var j = 0; j < ranks.length; j++){
+                    if (ranks[j] === "J" || ranks[j] === "Q" || ranks[j]=== "K"){
+                        this.deckOfCards.push(new Card(10, ranks[j], suits[i]));            
+                    }
+                    else {
+                        this.deckOfCards.push(new Card(j + 1, ranks[j], suits[i]));
+                    };
                 };
             };
         };
-        return deckOfCards;
+
+        // Shuffle deck of cards
+        // https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
+        shuffle(){
+            for (let i = this.deckOfCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.deckOfCards[i], this.deckOfCards[j]] = [this.deckOfCards[j], this.deckOfCards[i]];
+            };
+        }
+
+        dealCard(person){
+            let image = document.createElement("img");          
+            // Retrieve card from deckOfCards  
+            let card = deck.deckOfCards.pop();
+            // reshuffles deck if found empty
+            if (deck.deckOfCards.length === 0){
+                deck = deck.createNewDeck();
+                shuffle();
+            };
+            // Add card to hand
+            person.hand.push(card);
+            image.className = "animated slideInLeft"
+            // Hide Dealer's second card during initial deal
+            if (person.name === 'Dealer' && person.hand.length === 2){
+                image.id = "holeCard";
+                image.src = `./static/img/decks/deck_4.png`;                
+            }
+            else {
+                image.src = card.getCardImageURL();
+                // Calculate points from cards in hand
+                person.calculateHand();
+            };
+            // Display card on table
+            document.getElementById(`${person.name}-hand`).appendChild(image);
+        }
     };
-    
-    // Shuffle deckOfCards
-    // https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
-    function shuffle(a) {
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        };
-    };
-    
+
+    startNewGame();
+
 // ###################################
 // ########## BUTTON EVENTS ##########
 // ###################################
 
-    // Resets player and dealer stats, starts whole new game
-    // Add this feature when player reaches 0 bank amount
+    // Starts complete new game session
     newGame.addEventListener("click", function(){
         clearTable();        
         createNewGame();
@@ -127,17 +139,14 @@ document.addEventListener("DOMContentLoaded", function(){
         player.bet = betAmount;
         player.bank = bankAmount;
         document.getElementById("bettingButtons").style.display = "none";
-        document.getElementById("deal-button").style.display = "inline";        
-        document.getElementById("hit-button").style.display = "none";
-        document.getElementById("stand-button").style.display = "none";      
+        document.getElementById("deal-button").style.display = "inline";   
     });
 
     // Allows player to rebet, returns money to bank and set bet to zero
     rebet.addEventListener("click", function(){
         betAmount = parseInt(document.getElementById("bet-amount").innerHTML)
-        document.getElementById("bet-amount").innerHTML = 0;
-        player.bet = 0;
         bankAmount = parseInt(document.getElementById("bank-amount").innerHTML)
+        document.getElementById("bet-amount").innerHTML = 0;
         document.getElementById("bank-amount").innerHTML = bankAmount + betAmount;
         player.bank = bankAmount + betAmount
     });
@@ -160,23 +169,21 @@ document.addEventListener("DOMContentLoaded", function(){
     deal.addEventListener("click", function(){
         for (var i = 0; i < 2; i++){
             // Adds  2 cards to player and dealer hand
-            dealCard(player);
-            dealCard(dealer);
+            deck.dealCard(player);
+            deck.dealCard(dealer);
         };
         // Can only deal once per game, disables deal button 
         document.getElementById("deal-button").style.display = 'none';
         // Enable hit and stand button
         document.getElementById("hit-button").style.display = 'inline';
         document.getElementById("stand-button").style.display = 'inline';
-        gameStatus(player, dealer);        
+        // gameResults();        
     });
     
     // Deals one card to the player when hit button is clicked
     hit.addEventListener("click", function(){
-        // Adds card to player hand, and displays card on players table
-        dealCard(player)
-        // Check if player went bust, exceeded 21 points
-        gameStatus(player, dealer);
+        deck.dealCard(person);
+        gameResults();
     });
 
     // Start dealer's turn after stand button is clicked by player
@@ -185,148 +192,103 @@ document.addEventListener("DOMContentLoaded", function(){
         holeCard = document.getElementById("holeCard");
         holeCard.className = "animated flipInY";
         card = dealer.hand[1];
-        holeCard.src = `./static/img/cards/${card.rank}-of-${card.suit}.png`; 
+        holeCard.src = card.getCardImageURL(); 
         // Recalculate dealer's points
-        calculatePoints(dealer);
+        dealer.calculatePoints();
         while (dealer.points < 17){
-            dealCard(dealer);
+            deck.dealCard(dealer);
         };
-        gameStatus(dealer, player);
+        gameResults();
     });
 
 // ###################################
 // ###### GAME HELPER FUNCTIONS ######
 // ###################################
 
-    // Adds card to either player or dealer hand
-    function dealCard(player){
-        let image = document.createElement("img");          
-        // Retrieve card from deckOfCards  
-        let card = deckOfCards.pop();
-        // reshuffles deck if found empty
-        if (deckOfCards.length === 0){
-            deck = createNewDeck();
-            shuffle(deck);
-        };
-        // Add card to hand
-        player.hand.push(card);
-        image.className = "animated slideInLeft"
-        // Hide Dealer's second card during initial deal
-        if (player.name === 'Dealer' && player.hand.length === 2){
-            image.id = "holeCard";
-            image.src = `./static/img/decks/deck_4.png`;                
-        }
-        else {
-            image.src = `./static/img/cards/${card.rank}-of-${card.suit}.png`;
-            // Calcualte points from cards in hand
-            calculatePoints(player);
-        };
-        // Display card on table
-        document.getElementById(player.elementHand).appendChild(image);
-    };
-            
-    // Handles point total for both player and dealer
-    function calculatePoints(player){
-        // Create new array of cards in hand
-        cards = player.hand.slice(0);
-        // Sort cards value from highest to lowest
-        cards.sort(function(a, b){
-            return b.value - a.value;
-        });
-        // Calcute sum of cards in hand
-        points = cards.reduce(function(sum, card){
-            if (card.rank === "A" && sum < 11){
-                return sum + 11;
-            };
-            return sum + card.value;
-        }, 0);
-        player.points = points;
-        document.getElementById(player.elementPoints).innerHTML = points;
-    };
-    
-    // If Game Over, display game over message, the winner, and
-    // allow for new game to be played
-    function gameStatus(activePlayer, opponent){
-        let gameOver = false;
+    // Outcome between player and dealer
+    function gameResults(currentPlayer){
         let message = "";
-        let gameWon = "";
+        let gameOver = false;
 
-        if (activePlayer.points > 21){
-            message = `${activePlayer.name} Bust! ${opponent.name} Won!`;
-            gameOver = true;
-            if (activePlayer.name === "Dealer"){
-                player.wins += 1;
-                gameWon = "won";
-            }                                                               
-        };
-
-        if (!gameOver){
-            // If activePlayer is You
-            if (activePlayer.name === "You"){
-                if (opponent.points >= 17 && activePlayer.points > opponent.points){
-                    message = `${activePlayer.name} Won!`;                
-                    gameOver = true;
-                    player.wins += 1;
-                    gameWon = "won";
-                };
-            }
-            // If activePlayer is the Dealer
-            else if (activePlayer.name === "Dealer"){
-                if (opponent.points === 21 && opponent.hand.length === 2 && activePlayer.points !== 21){
-                    message = `${opponent.name} Won! BLACKJACK!`
-                    gameWon = "blackjack";
-                }
-                else if (activePlayer.points === opponent.points){
-                    message = `Push!`;
-                    gameWon = "draw";
-                }
-                else if (activePlayer.points > opponent.points){
-                    message = `${activePlayer.name} Won!`; 
-                }
-                else if (activePlayer.points < opponent.points){
-                    message = `${opponent.name} Won!`;
-                    player.wins += 1;
-                    gameWon = "won";
-                };
+        // During player's turn
+        if (currentPlayer === "Player"){
+            if (player.points > 21){
+                message = "You Bust!"
                 gameOver = true;
-            };
-        };
-        document.getElementById("wins").innerHTML = player.wins;            
-        // Display message on table
-        document.getElementById("messages").innerHTML = message;
-        if (gameOver){
-            // Set player winnings
-            if (gameWon === "won"){
-                betWinnings = player.bet * 2;
-                player.bank += betWinnings; 
             }
-            else if (gameWon === "blackjack"){
-                betWinnings = (player.bet * 1.5) + player.bet;
-                player.bank += betWinnings; 
+        }
+
+        // During Dealer's turn
+        else if (currentPlayer === "Dealer"){
+            if (player.points === 21 && player.hand.length === 2 && dealer.points !== 21){
+                message = "You Won! BLACKJACK!";
+                player.bank = Math.round((player.bet * 1.5) + player.bet);
             }
-            else if (gameWon === "draw"){
-                betWinnings = player.bet;
-                player.bank += betWinnings;
+            else if (dealer.points > 21) {
+                message = "Dealer Bust!"
+                player.wins += 1;
+                player.bank = player.bet * 2; 
             }
-            // If player is broke after losing last hand
-            if (player.bank === 0){
-                // Hide buttons
-                document.getElementById("new-button").style.display = "flex";   
-                document.getElementById("bettingButtons").style.display = "none";                
-                document.getElementById("deal-button").style.display = "none";        
-                document.getElementById("hit-button").style.display = "none";
-                document.getElementById("stand-button").style.display = "none";
+            else if (player.points === dealer.points){
+                message = "Draw!";
+                player.bank += player.bet;                
+            }
+            else if (player.points > dealer.points){
+                player.wins += 1;
+                message = "You Won!";
+                player.bank = player.bet * 2;                
             }
             else {
+                message = "You Lost!";
+
+            }
+            gameOver = true;
+        }
+
+        document.getElementById("messages").innerHTML = message;
+        if (gameOver){
+            if (player.bank === 0){
+                startNewGame();
+            } else {
                 playAgain();
             }
-        };
+        }   
+    };
+
+    // Restarts with a new game in current player session
+    function playAgain(){
+        // Reset bet amount, player hand, player points, and new dealer
+        player.hand = [];
+        player.bet = 0;
+        player.points = 0;
+        dealer = new Person("Dealer");
+        this.displayGameInfo();
+        // Delay table being cleared
+        setTimeout(function(){
+            clearTable();
+        }, 3000);          
+    };
+
+    // Displays game info and displays betting buttons
+    function displayGameInfo(){
+        // Game Stats
+        document.getElementById("Dealer-points").innerHTML = dealer.points;                
+        document.getElementById("Player-points").innerHTML = player.points;        
+        document.getElementById("bet-amount").innerHTML = player.bet;
+        document.getElementById("bank-amount").innerHTML = player.bank;
+        document.getElementById("wins").innerHTML = player.wins;
+        // Betting Buttons 
+        document.getElementById("bettingButtons").style.display = "flex";                
+        document.getElementById("deal-button").style.display = "none";        
+        document.getElementById("hit-button").style.display = "none";
+        document.getElementById("stand-button").style.display = "none";
+        document.getElementById("new-button").style.display = "none"; 
     };
 
     // Clears table of cards from dealer and player
     function clearTable(){
-        playerNode = document.getElementById("player-hand");
-        dealerNode = document.getElementById("dealer-hand");
+        playerNode = document.getElementById("Player-hand");
+        dealerNode = document.getElementById("Dealer-hand");
         if (playerNode.hasChildNodes()){
             while (playerNode.firstChild){
                 playerNode.removeChild(playerNode.firstChild);
@@ -337,6 +299,15 @@ document.addEventListener("DOMContentLoaded", function(){
         };
         document.getElementById("messages").innerHTML = "";        
     };
+        
+    // Start a complete new game session
+    function startNewGame(){
+        player = new Person("Player");
+        dealer = new Person("Dealer");
+        deck = new Deck();
+        deck.createNewDeck();
+        deck.shuffle();
+        displayGameInfo();
+    };
 
-}); //End of DOM
-
+}) // End of DOM
