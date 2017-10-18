@@ -9,7 +9,6 @@ var rebet = document.getElementById("rebet-button");
 var deal = document.getElementById("deal-button");
 var hit = document.getElementById("hit-button");
 var stand = document.getElementById("stand-button");
-var newGame = document.getElementById("new-button");
 
 // ###########################
 // ######### CLASSES #########
@@ -28,21 +27,18 @@ var newGame = document.getElementById("new-button");
 
         // Calculates values of cards in hand
         calculateHand(){
-            // Creates copy of hand array
-            cards = this.hand.slice();
             // Sorts cards highest to lowerst value
-            cards.sort(function(a, b){
+            this.hand.sort(function(a, b){
                 return b.value - a.value;
             });
             // Calcute sum of cards in hand
-            points = cards.reduce(function(sum, card){
+            this.points = this.hand.reduce(function(sum, card){
             if (card.rank === "A" && sum < 11){
                 return sum + 11;
             };
             return sum + card.value;
             }, 0);
-            this.points = points;
-            document.getElementById(`${this.name}-points`).innerHTML = points;
+            document.getElementById(`${this.name}-points`).innerHTML = this.points;
         }
     };
 
@@ -99,8 +95,8 @@ var newGame = document.getElementById("new-button");
             let card = deck.deckOfCards.pop();
             // reshuffles deck if found empty
             if (deck.deckOfCards.length === 0){
-                deck = deck.createNewDeck();
-                shuffle();
+                deck.createNewDeck();
+                deck.shuffle();
             };
             // Add card to hand
             person.hand.push(card);
@@ -125,12 +121,6 @@ var newGame = document.getElementById("new-button");
 // ###################################
 // ########## BUTTON EVENTS ##########
 // ###################################
-
-    // Starts complete new game session
-    newGame.addEventListener("click", function(){
-        clearTable();        
-        createNewGame();
-    });
 
     // Set bet of player
     bet.addEventListener("click", function(){
@@ -177,28 +167,30 @@ var newGame = document.getElementById("new-button");
         // Enable hit and stand button
         document.getElementById("hit-button").style.display = 'inline';
         document.getElementById("stand-button").style.display = 'inline';
-        // gameResults();        
     });
     
     // Deals one card to the player when hit button is clicked
     hit.addEventListener("click", function(){
-        deck.dealCard(person);
-        gameResults();
+        deck.dealCard(player);
+        gameResults(player);
     });
 
     // Start dealer's turn after stand button is clicked by player
     stand.addEventListener("click", function(){
+        // Disable hit and stand button
+        document.getElementById("hit-button").style.display = 'none';
+        document.getElementById("stand-button").style.display = 'none';
         // Flip over deal's second card, hole card
         holeCard = document.getElementById("holeCard");
         holeCard.className = "animated flipInY";
         card = dealer.hand[1];
         holeCard.src = card.getCardImageURL(); 
         // Recalculate dealer's points
-        dealer.calculatePoints();
+        dealer.calculateHand();
         while (dealer.points < 17){
             deck.dealCard(dealer);
         };
-        gameResults();
+        gameResults(dealer);
     });
 
 // ###################################
@@ -211,23 +203,27 @@ var newGame = document.getElementById("new-button");
         let gameOver = false;
 
         // During player's turn
-        if (currentPlayer === "Player"){
+        if (currentPlayer.name === "Player"){
             if (player.points > 21){
                 message = "You Bust!"
                 gameOver = true;
+                // Disable hit and stand button
+                document.getElementById("hit-button").style.display = 'none';
+                document.getElementById("stand-button").style.display = 'none';
             }
         }
 
         // During Dealer's turn
-        else if (currentPlayer === "Dealer"){
+        else if (currentPlayer.name === "Dealer"){
             if (player.points === 21 && player.hand.length === 2 && dealer.points !== 21){
                 message = "You Won! BLACKJACK!";
-                player.bank = Math.round((player.bet * 1.5) + player.bet);
+                player.wins += 1;
+                player.bank += Math.round((player.bet * 1.5) + player.bet);
             }
             else if (dealer.points > 21) {
                 message = "Dealer Bust!"
                 player.wins += 1;
-                player.bank = player.bet * 2; 
+                player.bank += player.bet * 2; 
             }
             else if (player.points === dealer.points){
                 message = "Draw!";
@@ -236,11 +232,10 @@ var newGame = document.getElementById("new-button");
             else if (player.points > dealer.points){
                 player.wins += 1;
                 message = "You Won!";
-                player.bank = player.bet * 2;                
+                player.bank += player.bet * 2;                
             }
             else {
                 message = "You Lost!";
-
             }
             gameOver = true;
         }
@@ -248,7 +243,10 @@ var newGame = document.getElementById("new-button");
         document.getElementById("messages").innerHTML = message;
         if (gameOver){
             if (player.bank === 0){
-                startNewGame();
+                document.getElementById("messages").innerHTML += " You are broke!";                
+                setTimeout(function(){
+                    startNewGame();
+                }, 3000);
             } else {
                 playAgain();
             }
@@ -262,9 +260,9 @@ var newGame = document.getElementById("new-button");
         player.bet = 0;
         player.points = 0;
         dealer = new Person("Dealer");
-        this.displayGameInfo();
         // Delay table being cleared
         setTimeout(function(){
+            displayGameInfo();
             clearTable();
         }, 3000);          
     };
@@ -282,7 +280,6 @@ var newGame = document.getElementById("new-button");
         document.getElementById("deal-button").style.display = "none";        
         document.getElementById("hit-button").style.display = "none";
         document.getElementById("stand-button").style.display = "none";
-        document.getElementById("new-button").style.display = "none"; 
     };
 
     // Clears table of cards from dealer and player
@@ -305,8 +302,9 @@ var newGame = document.getElementById("new-button");
         player = new Person("Player");
         dealer = new Person("Dealer");
         deck = new Deck();
-        deck.createNewDeck();
+        deck.createNewDeck();   
         deck.shuffle();
+        clearTable();
         displayGameInfo();
     };
 
